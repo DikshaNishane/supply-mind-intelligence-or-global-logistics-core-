@@ -10,6 +10,10 @@
   <img src="https://img.shields.io/badge/Status-Prototype-blue?style=for-the-badge" alt="status" />
 </p>
 
+<p align="center">
+  <em>Developed with ❤️ and care by <strong>Diksha Nishane</strong></em>
+</p>
+
 ## Overview
 
 SupplyMind AI is a command-center prototype for maritime logistics: a real-time dashboard, 3D digital twin, and an LLM-powered Copilot for operational intelligence and risk mitigation.
