@@ -6,6 +6,24 @@ import { createServer as createViteServer } from "vite";
 import path from "path";
 
 async function startServer() {
+  const buildFallbackResponse = (messages: any[] = []) => {
+    const lastUserMessage = [...messages].reverse().find((msg) => msg?.role === 'user');
+    const prompt = Array.isArray(lastUserMessage?.parts)
+      ? String(lastUserMessage.parts.map((p: any) => p?.text ?? '').join(' ')).trim()
+      : '';
+
+    const lower = prompt.toLowerCase();
+    if (lower.includes('fuel')) {
+      return `### Fuel Price Analysis\n- Global bunker prices are likely to stay volatile near major chokepoints.\n- Consider dynamic surcharge rules for Red Sea and Hormuz routes.\n- Prioritize fuel-efficient routing and slow-steaming on non-urgent shipments.`;
+    }
+
+    if (lower.includes('hormuz') || lower.includes('reroute')) {
+      return `### Route Mitigation Plan\n- Reroute high-value cargo away from the Strait of Hormuz where possible.\n- Increase ETA buffers and insurance coverage for exposed lanes.\n- Maintain real-time vessel monitoring for alternative ports of call.`;
+    }
+
+    return `### Neural Core Offline Mode\n- The Gemini model is currently busy, so I’m using a local fallback analysis.\n- Review active risk streams, then prioritize rerouting, ETA buffering, and fuel-cost controls.\n- If you want, I can refine this answer once the model is available again.`;
+  };
+
   // Load local environment variables (e.g. .env.local) during development
   dotenv.config({ path: ".env.local" });
   const app = express();
@@ -56,22 +74,35 @@ async function startServer() {
 
     try {
       const { GoogleGenAI } = await import("@google/genai");
-      // GoogleGenAI's constructor typings expect an options object; cast to any for flexibility
-      const genAI = new (GoogleGenAI as any)({ apiKey });
-      const model = (genAI as any).getGenerativeModel({ model: "gemini-1.5-flash" }); // Use flash for efficiency
+      const genAI = new GoogleGenAI({ apiKey });
 
-      const response = await model.generateContent({
-        contents: messages,
-        generationConfig: {
-          temperature: 0.7,
-        },
-        systemInstruction: systemInstruction
-      });
+      const modelsToTry = ["gemini-2.5-flash", "gemini-1.5-flash"];
+      let lastError: unknown = null;
 
-      res.json({ text: response.response.text() });
+      for (const model of modelsToTry) {
+        try {
+          const response = await genAI.models.generateContent({
+            model,
+            contents: messages,
+            config: {
+              temperature: 0.7,
+              systemInstruction,
+            },
+          });
+
+          return res.json({ text: response.text });
+        } catch (error) {
+          lastError = error;
+          console.warn(`[NEURAL WARN] Model ${model} failed, trying fallback.`, error);
+        }
+      }
+
+      console.warn("[NEURAL WARN] All Gemini models failed; serving fallback response.", lastError);
+      return res.json({ text: buildFallbackResponse(messages) });
     } catch (error) {
       console.error("[NEURAL ERROR]", error);
-      res.status(500).json({ error: "Neural core link failure." });
+      const message = error instanceof Error ? error.message : "Neural core link failure.";
+      res.status(500).json({ error: message });
     }
   });
 
