@@ -22,111 +22,90 @@ Utilizes multi-variant analysis to track global threats, from geopolitical insta
 
 ---
 
-## 🛠 Technical Architecture
+# SupplyMind AI — Global Logistics Command Center
 
-- **Frontend:** React 18+ with TypeScript
-- **State Management:** React Hooks & Memoization for high-frequency data updates
-- **Visualization:** 
-  - **3D Geospatial:** `Globe.gl` (Three.js 기반) & 3D Mapping Engines
-  - **Analytics:** `Recharts` for time-series and risk radar charts
-- **Animation:** `Motion` (Framer Motion) for fluid UI transitions
-- **Styling:** Tailwind CSS with high-contrast "Dark Ops" aesthetic
-- **Real-time:** Socket.io-client for simulated neural pulses and state updates
+SupplyMind AI is a prototype command center for maritime logistics: a dashboard, 3D digital twin, and an LLM-driven assistant for operational intelligence and risk mitigation.
 
----
+This repository contains a full-stack TypeScript/React app with a small Node server used to proxy requests to a generative model and serve the Vite front end during development.
 
-## 🔄 System Flow & Mechanism
+Key features
+- Real-time simulation engine driving telemetry and threat scores
+- 3D mapping integration (Google Maps Platform 3D) for a live digital twin
+- Neural Copilot (Google GenAI/Gemini) API proxy for LLM-driven summaries and recommendations
+- Interactive KPIs, tables, and charts for operational situational awareness
 
-### Data Ingestion Layer
-The system processes simulated telemetry from over 1,100 active vessels and maritime nodes. This includes tracking IDs, vessel names, origin/destination coordinates, and current status (In-Transit, Delayed, Diverted).
+## Quick start — run locally
 
-### Intelligence Layer (Neural Core)
-A central simulation engine (`useSimulation`) maintains the global "Threat Level." When a scenario is triggered (e.g., a blockade):
-1. The **Threat Level** and **Active Alerts** scale dynamically.
-2. The **Predictive Logic** recalculates ETAs and risk scores across the entire dataset.
-3. The **AI Copilot** updates its system context to prioritize event-specific mitigations.
+Prerequisites
+- Node.js 18+ (or compatible) and npm
 
-### Visualization & Interaction Layer
-- The **3D Globe** projects data markers and arcs.
-- **KPI Cards** react to neural pulses with "Glow" effects for critical deviations.
-- **Shipment Tables** perform live sorting based on calculated risk scores.
+Install and run
 
----
-
-## 📁 Technical Project Structure
-
-```text
-/src
-  /components        # Reusable UI Atoms & Dashboard Widgets
-    /dashboard       # KPI Cards, Maps, Tables, Chokepoint widgets
-    /layout          # Sidebar, TopBar, and Layout Framework
-  /hooks             # useSimulation (Neural pulse state)
-  /lib               # Mock data generators and utility functions
-  /pages             # Core Application Modules
-    AICopilot.tsx    # Neural Chat Interface
-    DigitalTwin.tsx  # 3D Simulation Environment
-    CommandCenter.tsx # Main Operational Dashboard
-    RiskIntel.tsx    # Threat Assessment Radar
-  /services          # External API integrations
+```bash
+git clone https://github.com/DikshaNishane/supply-mind-intelligence-or-global-logistics-core-.git
+cd supplymind-ai
+npm install
+# copy .env.example -> .env.local and fill values, or create .env.local
+npm run dev
 ```
 
-### 🚀 Vercel Deployment
+Open: http://localhost:3000
 
-This project is configured for seamless deployment on Vercel:
+## Environment variables
 
-1. **Connect to GitHub:** Import your repository into the Vercel Dashboard.
-2. **Configure Environment Variables:** Add the following variables in the **Vercel Project Settings > Environment Variables**:
-   - `GEMINI_API_KEY`: Your Neural Engine API Key (from Google AI Studio).
-   - `VITE_GOOGLE_MAPS_PLATFORM_KEY`: Your Google Maps Platform API Key.
-3. **Deploy:** Vercel will automatically detect the configuration and deploy your app.
+The app uses both server-side and client-side environment variables. For local development create a `.env.local` file in the project root (this repo already contains an example `.env.example`):
 
-### 💻 Local Development (VS Code)
+Required variables
+- `GEMINI_API_KEY` — Server-side key for Google GenAI (kept private)
+- `VITE_GOOGLE_MAPS_PLATFORM_KEY` — Client-side Google Maps Platform key (must start with `VITE_` to be available in the browser)
 
-To run this locally and fix the 3D Mapping errors:
+Example `.env.local`
 
-1. **Create a `.env.local` file** in the root directory.
-2. **Add your keys** in this format:
-   ```env
-   GEMINI_API_KEY=your_gemini_key_here
-   VITE_GOOGLE_MAPS_PLATFORM_KEY=your_google_maps_key_here
-   ```
-3. **Restart the dev server:** `npm run dev`
+```env
+GEMINI_API_KEY=your_gemini_api_key_here
+VITE_GOOGLE_MAPS_PLATFORM_KEY=your_google_maps_key_here
+```
 
-*Note: Variable names must match exactly. The `VITE_` prefix is required for the browser to see the Maps key.*
+Notes
+- Do not commit `.env.local` to git. The `.gitignore` already excludes `env*` files.
+
+## Deployment (Vercel)
+
+This project is ready for Vercel. To deploy:
+
+1. Import the GitHub repository into Vercel.
+2. In the Vercel project settings, set the Environment Variables above for the Production and Preview environments.
+3. Set the Root Directory to the repository root (this project serves via `server.ts` during dev, Vercel will run the build command `vite build`).
+4. Deploy — Vercel will run the build and serve static assets.
+
+Tip: Keep server-only secrets (like `GEMINI_API_KEY`) configured in the Vercel dashboard and do not expose them in client env variables.
+
+## Project structure
+
+High level
+
+```
+/
+  server.ts            # Node server used for local dev + API proxy to GenAI
+  vite.config.ts       # Vite configuration (exposes selected env vars to client)
+  src/                 # React + TypeScript frontend
+    components/        # UI components and map integration
+    pages/             # App pages (CommandCenter, DigitalTwin, AICopilot)
+  api/                 # Serverless-style API route used by some deployments
+```
+
+## Contributing
+
+- Open an issue for bugs or feature requests.
+- Create PRs against `main`.
+
+## License
+
+This repository is provided as-is for demonstration purposes. Add a license file if you intend to publish or share widely.
 
 ---
 
-## 🚦 Getting Started
+If you want, I can now:
 
-### Prerequisites
-- Node.js 18+
-- NPM
-
-### Local Installation
-
-1. **Clone the repository:**
-   ```bash
-   git clone <repository-url>
-   cd supplymind-ai
-   ```
-
-2. **Install dependencies:**
-   ```bash
-   npm install
-   ```
-
-3. **Environment Setup:**
-   Create a `.env` file in the root directory and add your keys:
-   ```env
-   VITE_API_KEY=your_key_here
-   ```
-
-4. **Run the development server:**
-   ```bash
-   npm run dev
-   ```
-
-5. **Build for production:**
-   ```bash
-   npm run build
-   ```
+- push this README change to GitHub (I will commit and push), or
+- add a Vercel configuration / deployment script for automatic deployments.
